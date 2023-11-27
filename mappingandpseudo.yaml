@@ -1,0 +1,51 @@
+# Define Parameters (Input Values)
+Parameters:
+  AllowedCidrIp:
+    Type: String
+    Default: 0.0.0.0/0
+    # The AllowedCidrIp parameter allows you to specify a CIDR block for Security Group Ingress.
+
+# Define AMI mappings based on AWS region
+Mappings:
+  AmiRegionMap:
+    us-east-1:
+      AMI: "ami-0fa1ca9559f1892ec"
+    us-east-2:
+      AMI: "ami-09f85f3aaae282910"
+    # Add more regions and corresponding AMI IDs as needed
+
+# Define AWS Resources
+Resources:
+  # Define an EC2 Instance
+  MyInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: !FindInMap
+        - AmiRegionMap
+        - !Ref "AWS::Region"
+        - AMI
+      Tags:
+        - Key: "Name"
+          Value: !Join ["-", [my, inst, from, cloudformation]]
+          # Create a tag for the EC2 instance using the !Join function to concatenate strings.
+
+      # Attach Security Groups to the EC2 Instance
+      SecurityGroupIds:
+        - !Ref MySecurityGroup
+          # Reference the Security Group created below.
+
+  # Define an EC2 Security Group
+  MySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP traffic
+      # Set the description for the Security Group.
+
+      # Define Ingress Rules for the Security Group
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref AllowedCidrIp
+          # Allow incoming HTTP traffic on port 80 from the specified CIDR block.

@@ -1,0 +1,72 @@
+# Define Parameters (Input Values)
+Parameters:
+  NameOfService:
+    Description: "Service name"
+    Type: String
+
+  AllowedCidrIp:
+    Description: "CIDR block for Security Group Ingress."
+    Type: String
+    Default: 0.0.0.0/0
+
+  InstanceTypeParameter:
+    Description: "Enter t2.micro, m1.small, or m1.large. Default is t2.micro."
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - m1.small
+      - m1.large
+
+  KeyName:
+    Description: "Name of EC2 login"
+    Type: AWS::EC2::KeyPair::KeyName
+
+# Define AMI mappings based on AWS region
+Mappings:
+  AmiRegionMap:
+    us-east-1:
+      AMI: "ami-0fa1ca9559f1892ec"
+    us-east-2:
+      AMI: "ami-09f85f3aaae282910"
+    # Add more regions and corresponding AMI IDs as needed
+
+# Define AWS Resources
+Resources:
+  # Define an EC2 Instance
+  MyInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceTypeParameter
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap
+        - AmiRegionMap
+        - !Ref "AWS::Region"
+        - AMI
+      Tags:
+        - Key: "Name"
+          Value: !Ref NameOfService
+
+      # Attach Security Groups to the EC2 Instance
+      SecurityGroupIds:
+        - !Ref MySecurityGroup
+
+  # Define an EC2 Security Group
+  MySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Allow HTTP traffic"
+      
+      # Define Ingress Rules for the Security Group
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref AllowedCidrIp
+
+# Define Outputs
+Outputs:
+  PrintSomeInfo:
+    Value: !GetAtt
+      - MyInstance
+      - PublicDnsName

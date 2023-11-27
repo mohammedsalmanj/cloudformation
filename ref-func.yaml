@@ -1,0 +1,17 @@
+# AWS CloudFormation Template
+Resources:
+  # Define an EC2 Instance named MyInstance
+  MyInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-0230bd60aa48260c6
+      # Define tags for the EC2 instance
+      Tags:
+        - Key: "Name"
+          # Use the !Join function to concatenate strings
+          Value: !Join
+            - " "
+            - - "My Instance in"
+              # Use the !Ref function to reference the AWS region
+              - !Ref AWS::Region

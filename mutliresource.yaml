@@ -1,0 +1,42 @@
+# AWS CloudFormation Template Version
+AWSTemplateFormatVersion: '2010-09-09'
+
+# Define Parameters (Input Values)
+Parameters:
+  AllowedCidrIp:
+    Type: String
+    Default: 0.0.0.0/0
+    # The AllowedCidrIp parameter allows you to specify a CIDR block for Security Group Ingress.
+
+# Define AWS Resources
+Resources:
+  # Define an EC2 Instance
+  MyInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-0230bd60aa48260c6
+      Tags:
+        - Key: "Name"
+          Value: !Join ["-", [my, inst, from, cloudformation]]
+          # Create a tag for the EC2 instance using the !Join function to concatenate strings.
+
+      # Attach Security Groups to the EC2 Instance
+      SecurityGroupIds:
+        - !Ref MySecurityGroup
+          # Reference the Security Group created below.
+
+  # Define an EC2 Security Group
+  MySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP traffic
+      # Set the description for the Security Group.
+
+      # Define Ingress Rules for the Security Group
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref AllowedCidrIp
+          # Allow incoming HTTP traffic on port 80 from the specified CIDR block.
